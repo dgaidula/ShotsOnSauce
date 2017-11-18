@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env /usr/local/bin/ruby
 require 'optparse'
 require 'ostruct'
 require 'selenium-webdriver'
@@ -10,14 +10,14 @@ require 'colored'
 require "artii"
 include Magick
 
-class Browser 
+class Browser
  attr_accessor :name, :version, :platform, :resolution
 end
- 
+
 options = OpenStruct.new
 options.encoding = "utf8"
 optparse = OptionParser.new do |opts|
- 
+
   opts.on('-h', 'Shows this help screen') do
     puts opts
     exit
@@ -30,17 +30,17 @@ end.parse!
 begin
   optparse.parse!
   mandatory = [:url]                                         # Enforce the presence of
-  missing = mandatory.select{ |param| options[param].nil? }        
+  missing = mandatory.select{ |param| options[param].nil? }
   if not missing.empty?                                            #
     puts "Missing options: #{missing.join(', ')}"                  #
     puts optparse                                                  #
     exit                                                           #
-  end     
+  end
   rescue OptionParser::InvalidOption, OptionParser::MissingArgument      #
   puts $!.to_s                                                           # Friendly output when parsing fails
   puts optparse                                                          #
   exit                                                                   #
-end           
+end
 
 
 $url = options.url.to_s
@@ -58,7 +58,7 @@ maxthreads = cfg['maxthreads']
 else
 abort("Missing config.yaml file".red_on_yellow)
 end
-pool = Thread.pool(maxthreads) # COUNT OF YOUR THREADS 
+pool = Thread.pool(5) # COUNT OF YOUR THREADS
 # load up all the browsers in a array
 BROWSERSYAML = 'browsers.yaml'
 if File.exists? (BROWSERSYAML)
@@ -70,7 +70,7 @@ end
 
 
       # clean up the url for documentation
-    
+
       uri = URI.parse(URI.encode($url))
       #quick little url valid check for debugging - needs better url error handling
       puts uri.kind_of? URI::HTTP
@@ -82,10 +82,10 @@ end
       puts ('--------------------------------------------').blue
       browsers.each do |b|
 
-      pool.process { 
+      pool.process {
       puts ("INFO: Opening " + b.name +  " " + b.version + " driver").blue
       imageName = ((b.name + "_" + b.version + "_" + b.platform + "_" + cleanUrl.gsub(/[^a-zA-Z 0-9]/, "-")).gsub(/\s/,'-')) + ".png"
-      
+
       caps = Selenium::WebDriver::Remote::Capabilities.send(b.name.to_sym)
       caps.version =  b.version
       caps.platform = b.platform
